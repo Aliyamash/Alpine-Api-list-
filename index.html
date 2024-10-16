@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <title>api list alpine</title>
+</head>
+
+<body>
+    <div class="container mt-5" x-data="apiList">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div>
+                    <h3 class="my-5">list Users :</h3>
+
+
+                    <template x-if="loading">
+                        <div class="spinner-grow" role="status"></div>
+                    </template>
+
+                    <template x-if="!loading" >
+                        <div>
+                            <table class="table align-middle" >
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Avatar</th>
+                                        <th scope="col">Id</th>
+                                        <th scope="col">First name</th>
+                                        <th scope="col">Last Name</th>
+                                        <th scope="col">Email</th>
+                                    </tr>
+                                </thead>
+                                <template x-for="(user ,index) in  users" :key="index">
+                                    <tbody>
+                                        <tr>
+                                            <th><img class="rounded-circle" width="50" :src="user.avatar"
+                                                    alt="him | her"></th>
+                                            <td x-text="user.id"></td>
+                                            <td x-text="user.first_name"></td>
+                                            <td x-text="user.last_name"></td>
+                                            <td x-text="user.email"></td>
+                                        </tr>
+                                    </tbody>
+                                </template>
+                            </table>
+                            <nav class="mt-5" aria-label="Page navigation example">
+                                <ul class="pagination justify-content-center">
+                                    <li class="page-item"><a class="page-link" @click="fetchData(pervPage)"
+                                            href="#">Previous</a></li>
+                                    <template x-for="(page , index) in pageNubmers" :key="index">
+                                        <li class="page-item" :class="{'active' : page === currentPage}" ><a class="page-link" href="#" x-text="page" @click="fetchData(page)"></a></li>
+                                    </template>
+
+                                    <li class="page-item"><a class="page-link" @click="fetchData(nextPage)"
+                                            href="#">Next</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('apiList', () => ({
+                users: [],
+                loading: true,
+                currentPage: 1,
+                totalPage: 1,
+                nextPage: 1,
+                pervPage: 1,
+                pageNubmers: [],
+                init() {
+                    this.fetchData();
+                },
+
+                fetchData(page = 1) {
+                    this.pageNubmers = [];
+                    this.loading = true;
+                    fetch(`https://reqres.in/api/users?page=${page}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            this.users = data.data;
+                            this.loading = false;
+                            this.totalPage = data.total_pages
+                            this.currentPage = data.page
+                            for (let i = 1; i <= this.totalPage; i++) {
+                                this.pageNubmers.push(i)
+                            }
+                            this.nextPage = this.currentPage === this.totalPage ? this.currentPage : this.currentPage + 1
+                            this.pervPage = this.currentPage === 1 ? this.currentPage : this.currentPage - 1
+                            console.log(this.users, this.currentPage, this.totalPage,)
+                        })
+                }
+            }))
+        })
+    </script>
+</body>
+
+</html>
